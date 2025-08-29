@@ -1,0 +1,15 @@
+{
+	"compilerOptions": {
+		"target": "ESNext", // 指定 ECMAScript 目标版本
+		"module": "ESNext", // 指定模块代码生成规范
+		"moduleResolution": "node", // 指定模块解析策略
+		"outDir": "dist", // 指定编译输出的目录
+		"resolveJsonModule": true, // 允许导入 JSON 文件
+		"strict": false, // 关闭严格模式
+		"lib": ["ESNext", "DOM"], // 指定要使用的库文件
+		"paths": {
+			"@vue/*": ["packages/*/src"]
+		},
+		"baseUrl": "./"
+	}
+}

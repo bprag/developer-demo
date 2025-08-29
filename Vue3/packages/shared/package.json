@@ -1,0 +1,13 @@
+{
+	"name": "@vue/shared",
+	"version": "1.0.0",
+	"description": "工具函数",
+	"main": "dist/shared.cjs.js",
+	"module": "dist/shared.esm.js",
+	"files": ["dist", "index.js"],
+	"sideEffects": false,
+	"buildOptions": {
+		"name": "VueShared",
+		"formats": ["esm-bundler", "esm-browser", "cjs", "global"]
+	}
+}

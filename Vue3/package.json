@@ -1,0 +1,20 @@
+{
+	"name": "vue3",
+	"version": "1.0.0",
+	"type": "module",
+	"main": "index.js",
+	"scripts": {
+		"dev:vue": "node scripts/dev.js vue --format esm",
+		"dev:reactivity": "node scripts/dev.js reactivity --format esm",
+		"dev:shared": "node scripts/dev.js shared --format esm"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"packageManager": "pnpm@10.8.1",
+	"devDependencies": {
+		"@types/node": "^22.18.0",
+		"esbuild": "^0.25.9",
+		"typescript": "^5.9.2"
+	}
+}

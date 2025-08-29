@@ -1,0 +1,24 @@
+{
+	"name": "@vue/reactivity",
+	"version": "1.0.0",
+	"description": "工具函数",
+	"main": "dist/reactivity.cjs.js",
+	"module": "dist/reactivity.esm.js",
+	"files": [
+		"dist",
+		"index.js"
+	],
+	"sideEffects": false,
+	"buildOptions": {
+		"name": "VueReactivity",
+		"formats": [
+			"esm-bundler",
+			"esm-browser",
+			"cjs",
+			"global"
+		]
+	},
+	"dependencies": {
+		"@vue/shared": "workspace:^"
+	}
+}
