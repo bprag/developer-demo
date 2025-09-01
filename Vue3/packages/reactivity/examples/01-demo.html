@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+		<head>
+				<meta charset="UTF-8">
+				<title>Title</title>
+		</head>
+		
+		<script type="module">
+				import { ref, effect } from '../dist/reactivity.esm.js';
+				
+				const count = ref(0);
+				
+				effect(() => {
+						console.log('count.value1==>', count.value);
+				})
+				effect(() => {
+						console.log('count.value2==>', count.value);
+				})
+				effect(() => {
+						console.log('count.value3==>', count.value);
+				})
+				effect(() => {
+						console.log('count.value4==>', count.value);
+				})
+				
+				setTimeout(() => {
+						count.value = 2;
+				}, 1000);
+
+		</script>
+</html>
