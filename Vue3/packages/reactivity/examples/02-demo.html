@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+		<head>
+				<meta charset="UTF-8">
+				<title>link 复用</title>
+		</head>
+		<body>
+				<button id="btn">
+						按钮
+				</button>
+		</body>
+		<script type="module">
+				import { ref, effect } from '../dist/reactivity.esm.js';
+				// import { ref, effect } from '../../../node_modules/vue/dist/vue.esm-browser.prod.js';
+				const flag = ref(true);
+				const count = ref(0);
+				effect(() => {
+								flag.value
+								count.value
+								console.count('effect');
+						}
+				)
+
+				btn.onclick = function () {
+						count.value++
+						console.log('===> flag', flag);
+						console.log('===> count', count);
+				}
+		</script>
+</html>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+		<head>
+				<meta charset="UTF-8">
+				<title>无限循环</title>
+		</head>
+		<body>
+		</body>
+		<script type="module">
+				// import { ref, effect } from '../dist/reactivity.esm.js';
+				import { ref, effect } from '../../../node_modules/vue/dist/vue.esm-browser.prod.js';
+
+				const count = ref(true);
+				effect(() => {
+						count.value++;
+						console.count('effect');
+				})
+		</script>
+</html>

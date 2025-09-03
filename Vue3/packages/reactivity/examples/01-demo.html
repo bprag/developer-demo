@@ -7,25 +7,24 @@
 		
 		<script type="module">
 				import { ref, effect } from '../dist/reactivity.esm.js';
-				
+				// import { ref, effect } from '../../../node_modules/vue/dist/vue.esm-browser.prod.js';
 				const count = ref(0);
-				
-				effect(() => {
-						console.log('count.value1==>', count.value);
-				})
-				effect(() => {
-						console.log('count.value2==>', count.value);
-				})
-				effect(() => {
-						console.log('count.value3==>', count.value);
-				})
-				effect(() => {
-						console.log('count.value4==>', count.value);
-				})
-				
+
+				const runner = effect(
+						() => {
+								console.log('外部的 count.value1==>', count.value);
+								return 1
+						},
+						{
+								scheduler: () => {
+										const data = runner()
+										console.log(`scheduler=>`, data)
+								}
+						}
+				)
+
 				setTimeout(() => {
 						count.value = 2;
 				}, 1000);
-
 		</script>
 </html>

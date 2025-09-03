@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+		<head>
+				<meta charset="UTF-8">
+				<title>清理依赖</title>
+		</head>
+		<body>
+				<div id="content"></div>
+				<button id="flagBtn">flagBtn</button>
+				<button id="nameBtn">nameBtn</button>
+				<button id="ageBtn">ageBtn</button>
+		</body>
+		<script type="module">
+				import { ref, effect } from '../dist/reactivity.esm.js';
+				// import { ref, effect } from '../../../node_modules/vue/dist/vue.esm-browser.prod.js';
+
+				const flag = ref(true);
+				const name = ref('测试');
+				const age = ref(1);
+				let count = 0
+				effect(() => {
+								// console.log(count)
+								// if (count > 1) return
+
+								console.count('effect');
+								if (flag.value) {
+										content.innerHTML = name.value;
+								} else {
+										content.innerHTML = age.value;
+								}
+						}
+				)
+
+				flagBtn.onclick = function () {
+						count++
+						flag.value = !flag.value
+				}
+				nameBtn.onclick = function () {
+						name.value = 'name.value' + Math.random();
+				}
+				ageBtn.onclick = function () {
+						age.value = Math.random()
+				}
+		</script>
+</html>
