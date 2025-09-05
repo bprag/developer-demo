@@ -68,7 +68,9 @@ export function propagate(subs) {
 	
 	while (link) {
 		const sub = link.sub
-		if (!sub.tracking) {
+		console.log(sub)
+		if (!sub.tracking && !sub.dirty) {
+			sub.dirty = true
 			queueEffect.push(link.sub)
 		}
 		link = link.nextSub
@@ -94,6 +96,7 @@ export function endTrack(sub) {
 		clearTracking(sub.deps)
 		sub.deps = undefined
 	}
+	sub.dirty = false
 	sub.tracking = false
 }
 

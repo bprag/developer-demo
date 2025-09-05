@@ -10,6 +10,7 @@ class RectiveEffect {
 	deps: Link | undefined
 	depsTail: Link | undefined
 	tracking: false
+	dirty: false
 	
 	constructor(public fn) {
 	}

@@ -12,10 +12,11 @@
 		<script type="module">
 				import { ref, effect } from '../dist/reactivity.esm.js';
 				// import { ref, effect } from '../../../node_modules/vue/dist/vue.esm-browser.prod.js';
-				const flag = ref(true);
 				const count = ref(0);
 				effect(() => {
-								flag.value
+								count.value
+								count.value
+								count.value
 								count.value
 								console.count('effect');
 						}
@@ -23,8 +24,6 @@
 
 				btn.onclick = function () {
 						count.value++
-						console.log('===> flag', flag);
-						console.log('===> count', count);
 				}
 		</script>
 </html>
