@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+		<head>
+				<meta charset="UTF-8">
+				<title>Title</title>
+		</head>
+		
+		<script type="module">
+				import { reactive, effect } from '../dist/reactivity.esm.js';
+				// import { ref, effect } from '../../../node_modules/vue/dist/vue.esm-browser.prod.js';
+				const obj = {
+						count: 0
+				}
+
+				const p = reactive(obj);
+				const p1 = reactive(obj);
+
+				effect(
+						() => {
+								p1.count
+								p.count
+								console.count('外部的 count.value1==>');
+						},
+				)
+
+				setTimeout(() => {
+						p.count = 2;
+				}, 1000);
+		</script>
+</html>
