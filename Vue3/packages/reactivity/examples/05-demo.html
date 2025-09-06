@@ -9,22 +9,26 @@
 				import { reactive, effect } from '../dist/reactivity.esm.js';
 				// import { ref, effect } from '../../../node_modules/vue/dist/vue.esm-browser.prod.js';
 				const obj = {
-						count: 0
+						a: {
+								b: 0
+						}
 				}
-
+				// const obj = {
+				// 		cont: 0
+				// }
 				const p = reactive(obj);
-				const p1 = reactive(obj);
 
 				effect(
 						() => {
-								p1.count
-								p.count
+								p.a.b
+								// p.cont
 								console.count('外部的 count.value1==>');
 						},
 				)
 
 				setTimeout(() => {
-						p.count = 2;
+						p.a.b = 2;
+						// p.cont = 2;
 				}, 1000);
 		</script>
 </html>
