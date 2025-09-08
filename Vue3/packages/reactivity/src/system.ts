@@ -1,9 +1,9 @@
-interface Sub {
+export interface Sub {
 	deps: Link | undefined
 	depsTail: Link | undefined
 }
 
-interface Dep {
+export interface Dependency {
 	subs: Link | undefined
 	subsTail: Link | undefined
 }
@@ -13,7 +13,7 @@ export interface Link {
 	nextSub: Link | undefined
 	prevSub: Link | undefined
 	
-	dep: Dep
+	dep: Dependency
 	nextDep: Link | undefined
 }
 
@@ -70,7 +70,11 @@ export function propagate(subs) {
 		const sub = link.sub
 		if (!sub.tracking && !sub.dirty) {
 			sub.dirty = true
-			queueEffect.push(link.sub)
+			if ('update' in sub) {
+				processComputedUpdate(sub)
+			} else {
+				queueEffect.push(link.sub)
+			}
 		}
 		link = link.nextSub
 	}
@@ -122,5 +126,11 @@ function clearTracking(link: Link) {
 		linkPool = link
 		
 		link = nextDep
+	}
+}
+
+function processComputedUpdate(sub) {
+	if (sub.subs && sub.update) {
+		propagate(sub.subs)
 	}
 }

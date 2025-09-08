@@ -3,7 +3,7 @@ import { Link, link, propagate } from "./system";
 import { hasChanged, isObject } from "@vue/shared";
 import { reactive } from "./reactive";
 
-enum ReactiveFlags {
+export enum ReactiveFlags {
 	IS_REF = '__v_isRef'
 }
 

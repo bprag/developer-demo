@@ -18,6 +18,10 @@ export class RectiveEffect {
 	}
 	
 	run() {
+		if (!this.active) {
+			return this.fn()
+		}
+		
 		const prevSub = activeSub
 		setActiveSub(this)
 		startTrack(this)
