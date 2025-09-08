@@ -6,11 +6,13 @@ export function setActiveSub(sub) {
 	activeSub = sub
 }
 
-class RectiveEffect {
+export class RectiveEffect {
 	deps: Link | undefined
 	depsTail: Link | undefined
 	tracking: false
 	dirty: false
+	
+	active: boolean = true
 	
 	constructor(public fn) {
 	}
@@ -33,6 +35,14 @@ class RectiveEffect {
 	
 	scheduler() {
 		this.run();
+	}
+	
+	stop() {
+		if (this.active) {
+			startTrack(this)
+			endTrack(this)
+			this.active = false
+		}
 	}
 }
 
