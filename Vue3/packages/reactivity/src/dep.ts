@@ -31,8 +31,24 @@ export function track(target, key) {
 }
 
 export function trigger(target, key) {
-	let activeSubs = targetMap.get(target)
-	let dep = activeSubs && activeSubs.get(key)
+	let depsMap = targetMap.get(target)
+	if (!depsMap) return
 	
-	propagate(dep.subs)
+	const targetIsArray = Array.isArray(target)
+	
+	if (targetIsArray && key === 'length') {
+		const length = target.length
+		
+		depsMap.forEach((dep, depKey) => {
+			if (key >= length || depKey === 'length') {
+				propagate(dep.subs)
+			}
+		})
+		
+	} else {
+		let dep = depsMap.get(key)
+		if (!dep) return;
+		propagate(dep.subs)
+	}
+	
 }

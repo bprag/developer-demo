@@ -5,13 +5,14 @@ import { reactive } from "./reactive";
 
 export const mutableHandlers = {
 	get(target, key, receiver) {
-		track(target, key)
 		
+		track(target, key)
 		let res = Reflect.get(target, key, receiver)
 		
 		if (isRef(res)) {
 			return res.value
 		}
+		
 		if (isObject(res)) {
 			return reactive(res)
 		}
@@ -22,6 +23,9 @@ export const mutableHandlers = {
 		let oldValue = target[key]
 		let res = Reflect.set(target, key, newValue, receiver)
 		
+		const targetIsArray = Array.isArray(target)
+		const oldLength = targetIsArray ? target.length : 0
+		
 		if (isRef(oldValue) && !isRef(newValue)) {
 			oldValue.value = newValue
 			return res
@@ -29,6 +33,12 @@ export const mutableHandlers = {
 		
 		if (hasChanged(oldValue, receiver)) {
 			trigger(target, key)
+		}
+		
+		const newLength = targetIsArray ? target.length : 0
+		
+		if (targetIsArray && oldLength !== newLength && key !== 'length') {
+			trigger(target, 'length')
 		}
 		
 		return res

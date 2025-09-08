@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+		<head>
+				<meta charset="UTF-8" />
+				<title>Title</title>
+				<style>
+						body {
+								padding: 150px;
+						}
+				</style>
+		</head>
+		<body>
+				<div id="app"></div>
+				<script type="module">
+						import { effect, reactive } from '../../../node_modules/vue/dist/vue.esm-browser.prod.js'
+						// import { effect, reactive } from '../dist/reactivity.esm.js'
+
+						const array = reactive([ 'a', 'b', 'c', 'd' ])
+
+						/**
+							* 一开始：['a', 'b', 'c', 'd'] length = 4
+							* 更新后：['a', 'b'] length = 2
+							*/
+						effect(() => {
+								console.log(array[1])
+						})
+
+						setTimeout(() => {
+								array.push('1')
+						}, 1000)
+
+				</script>
+		</body>
+</html>
