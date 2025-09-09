@@ -4,12 +4,77 @@
 				<meta charset="UTF-8">
 				<title>Title</title>
 		</head>
-		
+		<div id="app"></div>
+
 		<script type="module">
-				// import { h } from '../dist/reactivity.esm.js';
-				import { h } from '../../../node_modules/vue/dist/vue.esm-browser.prod.js';
+				import { renderOptions } from '../dist/vue.esm.js';
+				import { h, createRenderer } from '../../../node_modules/vue/dist/vue.esm-browser.js';
 
-				const vnode = h('div', 'ceshi');
+				/**
+					* class 修改
+					*/
+				// const vnode = h('div', { class: 'aaa' }, 'ceshi');
+				// const vnode2 = h('div', {}, 'ceshi');
+				// const renderer = createRenderer(renderOptions)
+				// renderer.render(vnode, app)
+				// const timer = setTimeout(() => {
+				// 		clearTimeout(timer)
+				// 		renderer.render(vnode2, app)
+				// }, 1000)
 
+				/**
+					* style 修改
+					*/
+				// const vnode = h('div', { style: { color: 'blue' } }, 'ceshi');
+				// // const vnode1 = h('div', { style: { color: 'red' } }, 'ceshi');
+				// const vnode1 = h('div', {}, 'ceshi');
+				// const renderer = createRenderer(renderOptions)
+				// renderer.render(vnode, app)
+				// const timer = setTimeout(() => {
+				// 		clearTimeout(timer)
+				// 		renderer.render(vnode1, app)
+				// }, 1000)
+
+				/**
+					* Event 修改
+					*/
+				// const vnode = h(
+				// 		'div',
+				// 		{
+				// 				onClick: () => {
+				// 						console.log('第一次')
+				// 				}
+				// 		},
+				// 		'ceshi');
+				//
+				// const vnode1 = h(
+				// 		'div',
+				// 		{
+				// 				onClick: () => {
+				// 						console.log('更新后')
+				// 				}
+				// 		},
+				// 		'ceshi'
+				// );
+				//
+				// const renderer = createRenderer(renderOptions)
+				// renderer.render(vnode, app)
+				// const timer = setTimeout(() => {
+				// 		clearTimeout(timer)
+				// 		renderer.render(vnode1, app)
+				// }, 1000)
+
+				/**
+					* Attrs 修改
+					*/
+						// const vnode = h('div', 'ceshi');
+				const vnode = h('div', { id: 'bbb' }, 'ceshi');
+				const vnode2 = h('div', 'ceshi');
+				const renderer = createRenderer(renderOptions)
+				renderer.render(vnode, app)
+				const timer = setTimeout(() => {
+						clearTimeout(timer)
+						renderer.render(vnode2, app)
+				}, 1000)
 		</script>
 </html>
