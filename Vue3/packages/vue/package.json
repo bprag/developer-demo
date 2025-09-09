@@ -4,10 +4,20 @@
 	"description": "vue核心包",
 	"main": "dist/vue.cjs.js",
 	"module": "dist/vue.esm.js",
-	"files": ["dist"],
+	"files": [
+		"dist"
+	],
 	"sideEffects": false,
 	"buildOptions": {
 		"name": "Vue",
-		"formats": ["esm-bundler", "esm-browser", "cjs", "global"]
+		"formats": [
+			"esm-bundler",
+			"esm-browser",
+			"cjs",
+			"global"
+		]
+	},
+	"dependencies": {
+		"@vue/runtime-dom": "workspace:^"
 	}
 }

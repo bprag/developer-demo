@@ -1,0 +1,25 @@
+{
+	"name": "@vue/runtime-core",
+	"version": "1.0.0",
+	"description": "工具函数",
+	"main": "dist/runtime-core.cjs.js",
+	"module": "dist/runtime-core.esm.js",
+	"files": [
+		"dist",
+		"index.js"
+	],
+	"sideEffects": false,
+	"buildOptions": {
+		"name": "VueRuntimeCore",
+		"formats": [
+			"esm-bundler",
+			"esm-browser",
+			"cjs",
+			"global"
+		]
+	},
+	"dependencies": {
+		"@vue/reactivity": "workspace:^",
+		"@vue/shared": "workspace:^"
+	}
+}
