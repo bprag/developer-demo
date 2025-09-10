@@ -8,7 +8,7 @@ export function patchStyle(el, prev, next) {
 	
 	if (prev) {
 		for (const key in prev) {
-			if (!next || !next[key]) {
+			if (next?.[key] === null || next?.[key] === undefined) {
 				style[key] = null
 			}
 		}

@@ -1,3 +1,5 @@
+export const isArray = Array.isArray
+
 export function isObject(value) {
 	return typeof value === 'object' && value !== null
 }
@@ -12,4 +14,12 @@ export function isFunction(fn) {
 
 export function isOn(eventName) {
 	return /^on[A-Z]/.test(eventName)
+}
+
+export function isString(value) {
+	return typeof value === 'string'
+}
+
+export function isNumber(value) {
+	return typeof value === 'number'
 }
