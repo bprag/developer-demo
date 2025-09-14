@@ -15,6 +15,109 @@ export function createRenderer(options) {
 	} = options
 	
 	/**
+	 * 开始全量 diff
+	 * @param c1
+	 * @param c2
+	 * @param container
+	 */
+	function patchKeyedChildren(c1, c2, container) {
+		let i = 0;
+		let e1 = c1.length - 1; // 老节点的尾索引
+		let e2 = c2.length - 1; // 新节点的尾索引
+		/**
+		 * 头部对比
+		 * [0,1,2,3,4,5,6]
+		 * [0,1,2,3,4,5,6,7]
+		 * 开始时：i=0, e1=6, e2=7
+		 * 结束时：i=7, e1=6, e2=7
+		 */
+		while (i <= e1 && i <= e2) {
+			const n1 = c1[i]
+			const n2 = c2[i]
+			if (isSameVNodeType(n1, n2)) {
+				patch(n1, n2, container)
+			} else {
+				break
+			}
+			
+			i++
+		}
+		/**
+		 * 尾部对比
+		 * [0,1,2,3,4,5,6,7]
+		 * [8,0,1,2,3,4,5,6,7]
+		 * 开始时：i = 0, e1 = 7, e2 = 8
+		 * 结束时：i = 0，e1 = -1, e2 = 1
+		 */
+		while (i <= e1 && i <= e2) {
+			const n1 = c1[e1]
+			const n2 = c2[e2]
+			if (isSameVNodeType(n1, n2)) {
+				patch(n1, n2, container)
+			} else {
+				break
+			}
+			
+			e1--
+			e2--
+		}
+		/**
+		 * 理想情况：老节点比新节点少，创建新节点
+		 * 理想情况：老节点比新节点多，删除老节点
+		 * 乱序情况
+		 */
+		if (i > e1) {
+			//
+			const nextPos = e2 + 1
+			const anchor = nextPos < c2.length ? c2[nextPos].el : null
+			while (i <= e2) {
+				patch(null, c2[i], container, anchor)
+				i++
+			}
+		} else if (i > e2) {
+			while (i <= e1) {
+				unmount(c1[i])
+				i++
+			}
+		} else {
+			let s1 = i // 老节点开始索引
+			let s2 = i // 新节点开始索引
+			
+			const keyToNewIndexMap = new Map()
+			
+			for (let i = s2; i <= e2; i++) {
+				const n2 = c2[i]
+				keyToNewIndexMap.set(n2.key, i)
+			}
+			/**
+			 * 处理老的
+			 */
+			for (let j = s1; j <= e1; j++) {
+				const n1 = c1[j]
+				const nIndex = keyToNewIndexMap.get(n1.key)
+				if (nIndex !== null && nIndex !== undefined) {
+					const n2 = c2[nIndex]
+					patch(n1, n2, container)
+				} else {
+					unmount(n1)
+				}
+			}
+			/**
+			 * 处理新的
+			 */
+			for (let j = e2; j >= s2; j--) {
+				const n2 = c2[j]
+				const anchor = j + 1 < c2.length ? c2[j + 1].el : null
+				if (n2.el) {
+					hostInsert(n2.el, container, anchor)
+				} else {
+					patch(null, n2, container, anchor)
+				}
+			}
+		}
+	}
+	
+	/**
 	 * 更新子节点
 	 * @param n1 旧节点
 	 * @param n2 新节点
@@ -29,10 +132,10 @@ export function createRenderer(options) {
 		 *    2.1 老的是数组
 		 *    2.2 老的是文本
 		 */
+		const preShapeFlag = n1.shapeFlag
 		const nextShapeFlag = n2.shapeFlag
 		
 		if (nextShapeFlag & ShapeFlags.TEXT_CHILDREN) {
-			const preShapeFlag = n1.shapeFlag
 			
 			if (preShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
 				unmountChildren(n1.children)
@@ -41,13 +144,24 @@ export function createRenderer(options) {
 				hostSetElementText(el, n2.children)
 			}
 		} else {
-			const preShapeFlag = n1.shapeFlag
-			
 			if (preShapeFlag & ShapeFlags.TEXT_CHILDREN) {
 				hostSetElementText(el, '')
-				mountChildren(n2.children, el)
+				if (nextShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+					mountChildren(n2.children, el)
+				}
 			} else {
-			
+				if (preShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+					if (nextShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+						// 全量 diff
+						patchKeyedChildren(n1.children, n2.children, el)
+					} else {
+						unmountChildren(n1.children)
+					}
+				} else {
+					if (nextShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+						mountChildren(n2.children, el)
+					}
+				}
 			}
 		}
 	}
@@ -128,8 +242,9 @@ export function createRenderer(options) {
 	 * 挂载
 	 * @param vnode
 	 * @param container
+	 * @param anchor
 	 */
-	function mountElement(vnode, container) {
+	function mountElement(vnode, container, anchor) {
 		const { type, props, children, shapeFlag } = vnode
 		
 		const el = hostCreateElement(type)
@@ -149,7 +264,7 @@ export function createRenderer(options) {
 			mountChildren(children, el)
 		}
 		
-		hostInsert(el, container)
+		hostInsert(el, container, anchor)
 	}
 	
 	/**
@@ -157,8 +272,9 @@ export function createRenderer(options) {
 	 * @param n1 旧节点
 	 * @param n2 新节点
 	 * @param container 容器
+	 * @param anchor 插入的节点
 	 */
-	function patch(n1, n2, container) {
+	function patch(n1, n2, container, anchor = null) {
 		if (n1 === n2) return
 		
 		if (n1 && n2 === null) {
@@ -172,10 +288,8 @@ export function createRenderer(options) {
 		}
 		
 		if (n1 === null) {
-			mountElement(n2, container)
+			mountElement(n2, container, anchor)
 		} else {
-			// TODO 更新
-			console.log('更新');
 			patchElement(n1, n2)
 		}
 	}
@@ -197,7 +311,7 @@ export function createRenderer(options) {
 		} else {
 			patch(container._vnode || null, vnode, container)
 		}
-		console.log('container._vnode', container._vnode);
+		
 		container._vnode = vnode // 保存旧节点
 	}
 	

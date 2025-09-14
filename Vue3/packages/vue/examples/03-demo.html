@@ -10,23 +10,17 @@
 				import { h, render } from '../dist/vue.esm.js';
 				// import { render, h } from '../../../node_modules/vue/dist/vue.esm-browser.js';
 
-				const vnode = h(
-						'div',
-						{
-								style: { color: 'red' }
-						},
-						'123'
-				);
-				const vnode1 = h(
-						'div',
-						{
-								style: { color: 'blue' }
-						},
-						[
-								h('p', 'hello'),
-								h('p', 'world')
-						]
-				);
+				const vnode = h('div', [
+						h('div', { key: 'a' }, 'a'),
+						h('div', { key: 'b' }, 'b'),
+						h('div', { key: 'c' }, 'c'),
+				]);
+				const vnode1 = h('div', [
+						h('div', { key: 'd' }, 'd'),
+						h('div', { key: 'a' }, 'a'),
+						h('div', { key: 'e', style: { color: 'red' } }, 'e'),
+						h('div', { key: 'c' }, 'c'),
+				]);
 
 				render(vnode, app)
 
