@@ -67,7 +67,6 @@ export function createRenderer(options) {
 		 * 乱序情况
 		 */
 		if (i > e1) {
-			//
 			const nextPos = e2 + 1
 			const anchor = nextPos < c2.length ? c2[nextPos].el : null
 			while (i <= e2) {
@@ -84,6 +83,7 @@ export function createRenderer(options) {
 			let s2 = i // 新节点开始索引
 			
 			const keyToNewIndexMap = new Map()
+			const newIndexToOldIndexMap = new Array(e2 - s2 + 1).fill(-1)
 			
 			for (let i = s2; i <= e2; i++) {
 				const n2 = c2[i]
@@ -92,16 +92,28 @@ export function createRenderer(options) {
 			/**
 			 * 处理老的
 			 */
+			let pos = -1;
+			let moved = false;
+			
 			for (let j = s1; j <= e1; j++) {
 				const n1 = c1[j]
 				const nIndex = keyToNewIndexMap.get(n1.key)
 				if (nIndex !== null && nIndex !== undefined) {
-					const n2 = c2[nIndex]
-					patch(n1, n2, container)
+					if (nIndex > pos) {
+						pos = nIndex
+					} else {
+						moved = true
+					}
+					newIndexToOldIndexMap[nIndex] = j
+					patch(n1, c2[nIndex], container)
 				} else {
 					unmount(n1)
 				}
 			}
+			
+			const newIndexSequence = moved ? getSequence(newIndexToOldIndexMap) : []
+			const sequence = new Set(newIndexSequence)
+			
 			/**
 			 * 处理新的
 			 */
@@ -109,7 +121,9 @@ export function createRenderer(options) {
 				const n2 = c2[j]
 				const anchor = j + 1 < c2.length ? c2[j + 1].el : null
 				if (n2.el) {
-					hostInsert(n2.el, container, anchor)
+					if (!sequence.has(j)) {
+						hostInsert(n2.el, container, anchor)
+					}
 				} else {
 					patch(null, n2, container, anchor)
 				}
@@ -318,4 +332,66 @@ export function createRenderer(options) {
 	return {
 		render
 	}
+}
+
+/**
+ * 求最长递增子序列
+ * @param target
+ */
+function getSequence(target: number[]): number[] {
+	const result = []
+	
+	const map = new Map<number, number>()
+	
+	for (let i = 0; i < target.length; i++) {
+		const item = target[i]
+		if (item === -1 || item === undefined) {
+			continue
+		}
+		
+		if (result.length === 0) {
+			result.push(i)
+			continue
+		}
+		
+		const preIndex = result[result.length - 1]
+		const preItem = target[preIndex]
+		
+		if (item > preItem) {
+			result.push(i)
+			map.set(i, preIndex)
+			continue
+		}
+		
+		let left = 0;
+		let right = result.length - 1;
+		
+		while (left < right) {
+			const mid = Math.floor((left + right) / 2)
+			const midItem = target[result[mid]]
+			
+			if (midItem > item) {
+				left = mid + 1
+			} else {
+				right = mid
+			}
+		}
+		
+		if (target[result[left]] > item) {
+			if (left > 0) {
+				map.set(i, result[left - 1])
+			}
+			result[left] = i
+		}
+	}
+	
+	let l = result.length
+	let last = result[l - 1]
+	while (l > 0) {
+		l--;
+		result[l] = last
+		last = map.get(last)
+	}
+	
+	return result
 }
