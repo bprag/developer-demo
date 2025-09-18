@@ -2,6 +2,7 @@ import { ShapeFlags } from "@vue/shared";
 import { isSameVNodeType, normalizeVNode, Text } from "./vnode"
 import { createAppAPI } from "./apiCreateApp";
 import { createComponentInstance, setupComponent } from "./component";
+import { RectiveEffect } from "@vue/reactivity";
 
 export function createRenderer(options) {
 	const {
@@ -344,10 +345,21 @@ export function createRenderer(options) {
 	function mountComponent(vnode, container, anchor) {
 		const instance = createComponentInstance(vnode)
 		setupComponent(instance)
-		const subTree = instance.render.call(instance.setupState)
-		patch(null, subTree, container, anchor)
-		instance.subTree = subTree
-		instance.isMounted = true
+		const componentUpdataFn = () => {
+			if (!instance.isMounted) {
+				const subTree = instance.render.call(instance.setupState)
+				patch(null, subTree, container, anchor)
+				instance.subTree = subTree
+				instance.isMounted = true
+			} else {
+				const preSubTree = instance.subTree
+				const subTree = instance.render.call(instance.setupState)
+				patch(preSubTree, subTree, container, anchor)
+				instance.subTree = subTree
+			}
+		}
+		const effect = new RectiveEffect(componentUpdataFn)
+		effect.run()
 	}
 	
 	/**
