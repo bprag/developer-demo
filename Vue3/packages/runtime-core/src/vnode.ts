@@ -1,7 +1,24 @@
-import { isArray, isString, ShapeFlags } from "@vue/shared";
+import { isArray, isFunction, isNumber, isObject, isString, ShapeFlags } from "@vue/shared";
+
+export const Text = Symbol('v-txt')
 
 export function isVNode(target) {
 	return !!target?.__v_isVNode
+}
+
+export function normalizeVNode(vnode) {
+	if (isString(vnode) || isNumber(vnode)) {
+		return createVNode(Text, null, String(vnode))
+	}
+	
+	return vnode
+}
+
+export function normalizeChildren(children) {
+	if (isNumber(children)) {
+		children = String(children)
+	}
+	return children
 }
 
 /**
@@ -14,9 +31,15 @@ export function isSameVNodeType(n1, n2) {
 }
 
 export function createVNode(type, props, children = null) {
+	children = normalizeChildren(children)
+	
 	let shapeFlag = 0;
 	if (isString(type)) {
 		shapeFlag = ShapeFlags.ELEMENT
+	} else if (isObject(type)) {
+		shapeFlag = ShapeFlags.STATEFUL_COMPONENT
+	} else if (isFunction(type)) {
+		shapeFlag = ShapeFlags.FUNCTIONAL_COMPONENT
 	}
 	
 	if (isString(children)) {

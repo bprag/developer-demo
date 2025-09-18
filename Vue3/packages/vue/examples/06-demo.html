@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+		<head>
+				<meta charset="UTF-8" />
+				<title>Title</title>
+		</head>
+		<body>
+				<div id="app"></div>
+				<script type="module">
+						import { h, createApp, ref } from '../dist/vue.esm.js';
+
+						const Comp = {
+								setup() {
+										const cont = ref(0)
+
+										return {
+												cont
+										}
+								},
+								render() {
+										return h('div', this.cont)
+								}
+						}
+
+						createApp(Comp).mount('#app')
+				</script>
+		</body>
+</html>

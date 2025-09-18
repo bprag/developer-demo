@@ -1,7 +1,7 @@
 export enum ShapeFlags {
 	// 表示 DOM 元素
 	ELEMENT = 1, // 1
-	// 表示函数组件
+	// 表示函数组件 （无状态）
 	FUNCTIONAL_COMPONENT = 1 << 1, // 10
 	// 表示有状态组件（带有状态、生命周期等）
 	STATEFUL_COMPONENT = 1 << 2, // 100

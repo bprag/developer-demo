@@ -1,5 +1,7 @@
 import { ShapeFlags } from "@vue/shared";
-import { isSameVNodeType } from "./vnode"
+import { isSameVNodeType, normalizeVNode, Text } from "./vnode"
+import { createAppAPI } from "./apiCreateApp";
+import { createComponentInstance, setupComponent } from "./component";
 
 export function createRenderer(options) {
 	const {
@@ -33,7 +35,7 @@ export function createRenderer(options) {
 		 */
 		while (i <= e1 && i <= e2) {
 			const n1 = c1[i]
-			const n2 = c2[i]
+			const n2 = c2[i] = normalizeVNode(c2[i])
 			if (isSameVNodeType(n1, n2)) {
 				patch(n1, n2, container)
 			} else {
@@ -51,7 +53,7 @@ export function createRenderer(options) {
 		 */
 		while (i <= e1 && i <= e2) {
 			const n1 = c1[e1]
-			const n2 = c2[e2]
+			const n2 = c2[e2] = normalizeVNode(c2[e2])
 			if (isSameVNodeType(n1, n2)) {
 				patch(n1, n2, container)
 			} else {
@@ -70,7 +72,7 @@ export function createRenderer(options) {
 			const nextPos = e2 + 1
 			const anchor = nextPos < c2.length ? c2[nextPos].el : null
 			while (i <= e2) {
-				patch(null, c2[i], container, anchor)
+				patch(null, c2[i] = normalizeVNode(c2[i]), container, anchor)
 				i++
 			}
 		} else if (i > e2) {
@@ -86,7 +88,7 @@ export function createRenderer(options) {
 			const newIndexToOldIndexMap = new Array(e2 - s2 + 1).fill(-1)
 			
 			for (let i = s2; i <= e2; i++) {
-				const n2 = c2[i]
+				const n2 = c2[i] = normalizeVNode(c2[i])
 				keyToNewIndexMap.set(n2.key, i)
 			}
 			/**
@@ -105,7 +107,7 @@ export function createRenderer(options) {
 						moved = true
 					}
 					newIndexToOldIndexMap[nIndex] = j
-					patch(n1, c2[nIndex], container)
+					patch(n1, c2[nIndex] = normalizeVNode(c2[nIndex]), container)
 				} else {
 					unmount(n1)
 				}
@@ -247,7 +249,7 @@ export function createRenderer(options) {
 	 */
 	function mountChildren(children, container) {
 		for (let i = 0; i < children.length; i++) {
-			const child = children[i]
+			const child = children[i] = normalizeVNode(children[i])
 			patch(null, child, container)
 		}
 	}
@@ -273,12 +275,79 @@ export function createRenderer(options) {
 		if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
 			// children is text
 			hostSetElementText(el, children)
-		} else {
+		} else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+			
 			// children is array
 			mountChildren(children, el)
 		}
 		
 		hostInsert(el, container, anchor)
+	}
+	
+	/**
+	 * 处理文本
+	 * @param n1
+	 * @param n2
+	 * @param container
+	 * @param anchor
+	 */
+	function processText(n1, n2, container, anchor) {
+		if (n1 === null) {
+			const el = hostCreateText(n2.children)
+			hostInsert(el, container, anchor)
+			n2.el = el
+		} else {
+			n2.el = n1.el
+			if (n1.children !== n2.children) {
+				hostSetText(n2.el, n2.children)
+			}
+		}
+	}
+	
+	/**
+	 * 处理元素
+	 * @param n1
+	 * @param n2
+	 * @param container
+	 * @param anchor
+	 */
+	function processElement(n1, n2, container, anchor) {
+		if (n1 === null) {
+			mountElement(n2, container, anchor)
+		} else {
+			patchElement(n1, n2)
+		}
+	}
+	
+	/**
+	 * 处理组件有状态和无状态
+	 * @param n1
+	 * @param n2
+	 * @param container
+	 * @param anchor
+	 */
+	function processComponent(n1, n2, container, anchor) {
+		if (n1 == null) {
+			// 挂载
+			mountComponent(n2, container, anchor)
+		} else {
+			// 更新
+		}
+	}
+	
+	/**
+	 * 挂载组件
+	 * @param vnode
+	 * @param container
+	 * @param anchor
+	 */
+	function mountComponent(vnode, container, anchor) {
+		const instance = createComponentInstance(vnode)
+		setupComponent(instance)
+		const subTree = instance.render.call(instance.setupState)
+		patch(null, subTree, container, anchor)
+		instance.subTree = subTree
+		instance.isMounted = true
 	}
 	
 	/**
@@ -300,11 +369,23 @@ export function createRenderer(options) {
 			unmount(n1)
 			n1 = null
 		}
+		/**
+		 * 处理元素、文本、组件
+		 */
+		const { shapeFlag, type } = n2
 		
-		if (n1 === null) {
-			mountElement(n2, container, anchor)
-		} else {
-			patchElement(n1, n2)
+		switch (type) {
+			case Text:
+				processText(n1, n2, container, anchor)
+				break
+			default:
+				if (shapeFlag & ShapeFlags.ELEMENT) {
+					// 元素
+					processElement(n1, n2, container, anchor)
+				} else if (shapeFlag & ShapeFlags.COMPONENT) {
+					processComponent(n1, n2, container, anchor)
+				}
+			
 		}
 	}
 	
@@ -330,12 +411,13 @@ export function createRenderer(options) {
 	}
 	
 	return {
-		render
+		render,
+		createApp: createAppAPI(render)
 	}
 }
 
 /**
- * 求最长递增子序列
+ * 最长递增子序列
  * @param target
  */
 function getSequence(target: number[]): number[] {

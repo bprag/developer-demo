@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+		<head>
+				<meta charset="UTF-8" />
+				<title>Title</title>
+		</head>
+		<body>
+				<div id="app"></div>
+				<script type="module">
+						import { h, render, Text } from '../dist/vue.esm.js';
+						// import { render, h,Text } from '../../../node_modules/vue/dist/vue.esm-browser.js';
+						const vnode1 = h('div', null, [ 'hello', 'word' ])
+
+						const vnode2 = h('div', null, [ 'world', 'aa' ])
+
+						render(vnode1, app)
+
+						setTimeout(() => {
+								render(vnode2, app)
+						}, 1000)
+				</script>
+		</body>
+</html>
