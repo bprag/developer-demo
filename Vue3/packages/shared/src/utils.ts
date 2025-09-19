@@ -23,3 +23,7 @@ export function isString(value) {
 export function isNumber(value) {
 	return typeof value === 'number'
 }
+
+export function hasOwn(object, key) {
+	return Object.hasOwn(object, key)
+}

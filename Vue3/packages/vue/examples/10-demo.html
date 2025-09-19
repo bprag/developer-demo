@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+		<head>
+				<meta charset="UTF-8" />
+				<title>Title</title>
+		</head>
+		<body>
+				<div id="app"></div>
+				<button id="btn">++</button>
+				<script type="module">
+						import { h, createApp, ref, nextTick } from '../dist/vue.esm.js';
+						// import { h, createApp, ref } from '../../../node_modules/vue/dist/vue.esm-browser.js';
+
+						const Comp = {
+								props: [ 'msg' ],
+								setup(props, { attrs }) {
+										const count = ref(0)
+
+										btn.onclick = () => {
+												count.value++
+												count.value++
+												count.value++
+												count.value++
+												nextTick(() => {
+														console.log(`🚀 ~ document.querySelector('#ccc').textContent =>`, document.querySelector('#ccc').textContent)
+												})
+										}
+
+										return () => {
+												console.log(count.value)
+												return h('div', { id: 'ccc' }, count.value)
+										}
+								},
+						}
+
+						createApp(Comp, { msg: 'hi', cont: '123' }).mount('#app')
+				</script>
+		</body>
+</html>

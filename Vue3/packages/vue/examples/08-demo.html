@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+		<head>
+				<meta charset="UTF-8" />
+				<title>Title</title>
+		</head>
+		<body>
+				<div id="app"></div>
+				<button id="btn">++</button>
+				<script type="module">
+						import { h, createApp, ref } from '../dist/vue.esm.js';
+						// import { h, createApp, ref } from '../../../node_modules/vue/dist/vue.esm-browser.js';
+
+						const Comp = {
+								setup() {
+										const cont = ref(0)
+										return {
+												cont
+										}
+								},
+								render() {
+										return h('div', {
+												onClick: () => {
+														this.cont++
+												}
+										}, this.cont)
+								}
+						}
+
+						createApp(Comp).mount('#app')
+				</script>
+		</body>
+</html>
