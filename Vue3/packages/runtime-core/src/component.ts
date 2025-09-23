@@ -20,6 +20,7 @@ export function createComponentInstance(vnode) {
 	}
 	
 	instance.ctx = { _: instance }
+	instance.emit = emit.bind(null, instance)
 	
 	return instance
 }
@@ -33,16 +34,19 @@ function createSetupContext(instance) {
 	return {
 		get attrs() {
 			return instance.attrs
+		},
+		emit(event, ...args) {
+			emit(instance, event, ...args)
 		}
 	}
 }
 
 const publicPropertiesMap = {
 	$el: instance => instance.vnode.el,
-	$attrs: instance => instance.attrs,
-	$emit: instance => instance.emit,
-	$slots: instance => instance.slots,
 	$refs: instance => instance.refs,
+	$emit: instance => instance.emit,
+	$attrs: instance => instance.attrs,
+	$slots: instance => instance.slots,
 	$nextTick: instance => nextTick.bind(instance),
 	$forceUpdate: instance => () => instance.update()
 }
@@ -100,4 +104,11 @@ function handleSetupResult(instance, setupResult) {
 	} else if (isObject(setupResult)) {
 		instance.setupState = proxyRefs(setupResult)
 	}
+}
+
+export function emit(instance, event, ...args) {
+	const eventName = `on${ event[0].toUpperCase() }${ event.slice(1) }`
+	
+	const handler = instance.vnode.props[eventName]
+	handler && isFunction(handler) && handler(...args)
 }
