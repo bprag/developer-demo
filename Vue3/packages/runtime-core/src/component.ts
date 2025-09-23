@@ -2,6 +2,7 @@ import { proxyRefs } from "@vue/reactivity";
 import { hasOwn, isFunction, isObject } from "@vue/shared";
 import { initProps, normalizePropsOptions } from "./componentProps";
 import { nextTick } from "./scheduler";
+import { initSlots } from './componentSlots';
 
 export function createComponentInstance(vnode) {
 	const { type } = vnode
@@ -11,6 +12,7 @@ export function createComponentInstance(vnode) {
 		propsOptions: normalizePropsOptions(type.props),
 		props: {},
 		attrs: {},
+		slots: {},
 		setupState: null,
 		render: null,
 		// 子树
@@ -27,6 +29,7 @@ export function createComponentInstance(vnode) {
 
 export function setupComponent(instance) {
 	initProps(instance)
+	initSlots(instance)
 	setupStatefulComponent(instance)
 }
 
@@ -34,6 +37,9 @@ function createSetupContext(instance) {
 	return {
 		get attrs() {
 			return instance.attrs
+		},
+		get slots() {
+			return instance.slots
 		},
 		emit(event, ...args) {
 			emit(instance, event, ...args)

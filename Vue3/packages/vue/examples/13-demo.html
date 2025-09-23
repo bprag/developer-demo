@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+		<head>
+				<meta charset="UTF-8" />
+				<title>Title</title>
+		</head>
+		<body>
+				<div id="app"></div>
+				<script type="module">
+						import { h, createApp, ref } from '../dist/vue.esm.js';
+
+						const Child = {
+								setup(props, { slots }) {
+										const count = ref(0);
+
+										setTimeout(() => {
+												count.value++
+										}, 1000)
+
+										return () => h('div', [ slots.default(), slots.header(), slots.footer({ a: count.value }) ]);
+								},
+						}
+
+						const Comp = {
+								setup() {
+
+										return () => {
+												return h(Child, null, {
+														default: () => h('div', '具名插槽'),
+														header: () => h('div', '默认插槽'),
+														footer: ({ a }) => h('div', `作用域插槽${ a }`),
+												})
+										}
+								},
+						}
+
+						createApp(Comp).mount('#app')
+				</script>
+		</body>
+</html>

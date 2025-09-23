@@ -14,10 +14,29 @@ export function normalizeVNode(vnode) {
 	return vnode
 }
 
-export function normalizeChildren(children) {
-	if (isNumber(children)) {
+export function normalizeChildren(vnode, children) {
+	let { shapeFlag } = vnode
+	
+	if (isArray(children)) {
+		shapeFlag |= ShapeFlags.ARRAY_CHILDREN
+	} else if (isObject(children)) {
+		if (shapeFlag & ShapeFlags.COMPONENT) {
+			shapeFlag |= ShapeFlags.SLOTS_CHILDREN
+		}
+	} else if (isFunction(children)) {
+		if (shapeFlag & ShapeFlags.COMPONENT) {
+			shapeFlag |= ShapeFlags.SLOTS_CHILDREN
+			children = {
+				default: children
+			}
+		}
+	} else if (isNumber(children) || isString(children)) {
 		children = String(children)
+		shapeFlag |= ShapeFlags.TEXT_CHILDREN
 	}
+	
+	vnode.shapeFlag = shapeFlag
+	vnode.children = children
 	return children
 }
 
@@ -31,9 +50,9 @@ export function isSameVNodeType(n1, n2) {
 }
 
 export function createVNode(type, props, children = null) {
-	children = normalizeChildren(children)
 	
 	let shapeFlag = 0;
+	
 	if (isString(type)) {
 		shapeFlag = ShapeFlags.ELEMENT
 	} else if (isObject(type)) {
@@ -42,21 +61,17 @@ export function createVNode(type, props, children = null) {
 		shapeFlag = ShapeFlags.FUNCTIONAL_COMPONENT
 	}
 	
-	if (isString(children)) {
-		shapeFlag |= ShapeFlags.TEXT_CHILDREN
-	} else if (isArray(children)) {
-		shapeFlag |= ShapeFlags.ARRAY_CHILDREN
-	}
-	
 	const vnode = {
 		__v_isVNode: true,
 		type,
 		props,
 		key: props?.key,
-		children,
+		children: null,
 		shapeFlag,
 		el: null
 	}
+	
+	normalizeChildren(vnode, children)
 	
 	return vnode;
 }

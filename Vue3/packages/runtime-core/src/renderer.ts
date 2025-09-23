@@ -6,6 +6,7 @@ import { RectiveEffect } from "@vue/reactivity";
 import { queueJob } from "./scheduler";
 import { shouldUpdateComponent } from './componentRenderUtils';
 import { updateProps } from './componentProps';
+import { updateSlots } from './componentSlots';
 
 export function createRenderer(options) {
 	const {
@@ -356,6 +357,8 @@ export function createRenderer(options) {
 		instance.next = null
 		
 		updateProps(instance, next)
+		
+		updateSlots(instance, next)
 	}
 	
 	function setupRenderEffect(instance, container, anchor) {

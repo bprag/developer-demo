@@ -4,12 +4,7 @@
 	"type": "module",
 	"main": "index.js",
 	"scripts": {
-		"dev": "node scripts/dev.js --format esm",
-		"dev:vue": "node scripts/dev.js vue --format esm",
-		"dev:reactivity": "node scripts/dev.js reactivity --format esm",
-		"dev:shared": "node scripts/dev.js shared --format esm",
-		"dev:runtime-core": "node scripts/dev.js runtime-core --format esm",
-		"dev:runtime-dom": "node scripts/dev.js runtime-dom --format esm"
+		"dev": "node scripts/dev.js --format esm"
 	},
 	"keywords": [],
 	"author": "",
