@@ -12,6 +12,26 @@ export function normalizePropsOptions(props = {}) {
 	return props
 }
 
+export function updateProps(instance, nextVNode) {
+	const { props, attrs } = instance
+	
+	const rawProps = nextVNode.props
+	
+	setFullProps(instance, rawProps, props, attrs)
+	
+	for (const key in props) {
+		if (!hasOwn(rawProps, key)) {
+			delete props[key]
+		}
+	}
+	
+	for (const key in attrs) {
+		if (!hasOwn(rawProps, key)) {
+			delete attrs[key]
+		}
+	}
+}
+
 function setFullProps(instance, rawProps, props, attrs) {
 	const { propsOptions } = instance
 	if (rawProps) {

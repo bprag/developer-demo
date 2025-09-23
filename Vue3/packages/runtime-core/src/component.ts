@@ -25,10 +25,8 @@ export function createComponentInstance(vnode) {
 }
 
 export function setupComponent(instance) {
-	
 	initProps(instance)
 	setupStatefulComponent(instance)
-	
 }
 
 function createSetupContext(instance) {

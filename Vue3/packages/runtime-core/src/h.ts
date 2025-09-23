@@ -24,7 +24,7 @@ export function h(type, propsOrChildren?, children?) {
 		if (isObject(propsOrChildren)) {
 			// h('div', h('span', 'hello'))
 			if (isVNode(propsOrChildren)) {
-				return createVNode(type, null, [ propsOrChildren ])
+				return createVNode(type, null, [propsOrChildren])
 			}
 			// h('div', { class: 'container' })
 			return createVNode(type, propsOrChildren)
@@ -33,9 +33,9 @@ export function h(type, propsOrChildren?, children?) {
 		return createVNode(type, null, propsOrChildren)
 	} else {
 		if (len > 3) {
-			children = [ ...arguments ].slice(2)
+			children = [...arguments].slice(2)
 		} else if (isVNode(children)) {
-			children = [ children ]
+			children = [children]
 		}
 		return createVNode(type, propsOrChildren, children)
 	}

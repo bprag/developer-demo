@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+		<head>
+				<meta charset="UTF-8" />
+				<title>Title</title>
+		</head>
+		<body>
+				<div id="app"></div>
+				<button id="btn">++</button>
+				<script type="module">
+						import { h, createApp, ref, nextTick } from '../dist/vue.esm.js';
+						// import { h, createApp, ref } from '../../../node_modules/vue/dist/vue.esm-browser.js';
+
+						const Child = {
+								props: [ 'age' ],
+								setup(props) {
+										return () => h('div', [ props.age ]);
+								},
+						}
+
+						const Comp = {
+								setup() {
+										const count = ref(0)
+										btn.onclick = () => {
+												count.value++
+										}
+
+										return () => {
+												return h(Child, { age: count.value })
+										}
+								},
+						}
+
+						createApp(Comp).mount('#app')
+				</script>
+		</body>
+</html>

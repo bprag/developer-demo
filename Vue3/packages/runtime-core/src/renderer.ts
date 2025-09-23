@@ -4,6 +4,8 @@ import { createAppAPI } from "./apiCreateApp";
 import { createComponentInstance, setupComponent } from "./component";
 import { RectiveEffect } from "@vue/reactivity";
 import { queueJob } from "./scheduler";
+import { shouldUpdateComponent } from './componentRenderUtils';
+import { updateProps } from './componentProps';
 
 export function createRenderer(options) {
 	const {
@@ -236,7 +238,7 @@ export function createRenderer(options) {
 	 * @param vnode 旧节点
 	 */
 	function unmount(vnode) {
-		const { type, shapeFlag, children } = vnode;
+		const { shapeFlag } = vnode;
 		if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
 			// 递归卸载子节点
 			unmountChildren(vnode.children)
@@ -278,7 +280,6 @@ export function createRenderer(options) {
 			// children is text
 			hostSetElementText(el, children)
 		} else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-			
 			// children is array
 			mountChildren(children, el)
 		}
@@ -321,6 +322,18 @@ export function createRenderer(options) {
 		}
 	}
 	
+	function updateComponent(n1, n2) {
+		const instance = (n2.component = n1.component)
+		
+		if (shouldUpdateComponent(n1, n2)) {
+			instance.next = n2
+			instance.update();
+		} else {
+			n2.el = n1.el
+			instance.vnode = n2
+		}
+	}
+	
 	/**
 	 * 处理组件有状态和无状态
 	 * @param n1
@@ -334,28 +347,38 @@ export function createRenderer(options) {
 			mountComponent(n2, container, anchor)
 		} else {
 			// 更新
+			updateComponent(n1, n2)
 		}
 	}
 	
-	/**
-	 * 挂载组件
-	 * @param vnode
-	 * @param container
-	 * @param anchor
-	 */
-	function mountComponent(vnode, container, anchor) {
-		const instance = createComponentInstance(vnode)
-		setupComponent(instance)
+	function updateComponentPreRender(instance, next) {
+		instance.vnode = next
+		instance.next = null
+		
+		updateProps(instance, next)
+	}
+	
+	function setupRenderEffect(instance, container, anchor) {
+		
 		const componentUpdataFn = () => {
 			if (!instance.isMounted) {
+				const { vnode } = instance
 				const subTree = instance.render.call(instance.proxy)
 				patch(null, subTree, container, anchor)
+				vnode.el = subTree.el
 				instance.subTree = subTree
 				instance.isMounted = true
 			} else {
+				let { next, vnode } = instance
+				if (next) {
+					updateComponentPreRender(instance, next)
+				} else {
+					next = vnode
+				}
 				const preSubTree = instance.subTree
 				const subTree = instance.render.call(instance.proxy)
 				patch(preSubTree, subTree, container, anchor)
+				next.el = subTree.el
 				instance.subTree = subTree
 			}
 		}
@@ -369,6 +392,19 @@ export function createRenderer(options) {
 		}
 		
 		update()
+	}
+	
+	/**
+	 * 挂载组件
+	 * @param vnode
+	 * @param container
+	 * @param anchor
+	 */
+	function mountComponent(vnode, container, anchor) {
+		const instance = createComponentInstance(vnode)
+		vnode.component = instance;
+		setupComponent(instance)
+		setupRenderEffect(instance, container, anchor)
 	}
 	
 	/**
