@@ -7,6 +7,7 @@ import { queueJob } from "./scheduler";
 import { shouldUpdateComponent } from './componentRenderUtils';
 import { updateProps } from './componentProps';
 import { updateSlots } from './componentSlots';
+import { LifecycleHooks, triggerHooks } from './apiLifecycle';
 
 export function createRenderer(options) {
 	const {
@@ -234,16 +235,30 @@ export function createRenderer(options) {
 		}
 	}
 	
+	function unmountComponent(instance) {
+		triggerHooks(instance, LifecycleHooks.BEFORE_UNMOUNT)
+		
+		unmount(instance.subTree)
+		
+		triggerHooks(instance, LifecycleHooks.UNMOUNTED)
+	}
+	
 	/**
 	 * 卸载
 	 * @param vnode 旧节点
 	 */
 	function unmount(vnode) {
 		const { shapeFlag } = vnode;
+		
+		if (shapeFlag & ShapeFlags.COMPONENT) {
+			unmountComponent(vnode.component)
+		}
+		
 		if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
 			// 递归卸载子节点
 			unmountChildren(vnode.children)
 		}
+		
 		hostRemove(vnode.el);
 	}
 	
@@ -366,11 +381,13 @@ export function createRenderer(options) {
 		const componentUpdataFn = () => {
 			if (!instance.isMounted) {
 				const { vnode } = instance
+				triggerHooks(instance, LifecycleHooks.BEFORE_MOUNT)
 				const subTree = instance.render.call(instance.proxy)
 				patch(null, subTree, container, anchor)
 				vnode.el = subTree.el
 				instance.subTree = subTree
 				instance.isMounted = true
+				triggerHooks(instance, LifecycleHooks.MOUNTED)
 			} else {
 				let { next, vnode } = instance
 				if (next) {
@@ -378,13 +395,16 @@ export function createRenderer(options) {
 				} else {
 					next = vnode
 				}
+				triggerHooks(instance, LifecycleHooks.BEFORE_UPDATE)
 				const preSubTree = instance.subTree
 				const subTree = instance.render.call(instance.proxy)
 				patch(preSubTree, subTree, container, anchor)
 				next.el = subTree.el
 				instance.subTree = subTree
+				triggerHooks(instance, LifecycleHooks.UPDATED)
 			}
 		}
+		
 		const effect = new RectiveEffect(componentUpdataFn)
 		const update = effect.run.bind(effect)
 		

@@ -4,6 +4,8 @@ import { initProps, normalizePropsOptions } from "./componentProps";
 import { nextTick } from "./scheduler";
 import { initSlots } from './componentSlots';
 
+export let currentInstance;
+
 export function createComponentInstance(vnode) {
 	const { type } = vnode
 	const instance: { [key in string]: any } = {
@@ -96,9 +98,12 @@ function setupStatefulComponent(instance) {
 	
 	if (isFunction(type.setup)) {
 		const setupContext = createSetupContext(instance)
+		setCurrentInstance(instance)
 		const setupResult = proxyRefs(type.setup(instance.props, setupContext))
+		unCurrentInstance()
 		handleSetupResult(instance, setupResult)
 	}
+	
 	if (!instance.render) {
 		instance.render = type.render
 	}
@@ -117,4 +122,16 @@ export function emit(instance, event, ...args) {
 	
 	const handler = instance.vnode.props[eventName]
 	handler && isFunction(handler) && handler(...args)
+}
+
+export function getCurrentInstance() {
+	return currentInstance
+}
+
+export function setCurrentInstance(instance) {
+	currentInstance = instance
+}
+
+export function unCurrentInstance() {
+	currentInstance = null
 }

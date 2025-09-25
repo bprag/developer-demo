@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+		<head>
+				<meta charset="UTF-8" />
+				<title>Title</title>
+		</head>
+		<body>
+				<div id="app"></div>
+				<script type="module">
+						import { h, createApp,  getCurrentInstance } from '../dist/vue.esm.js';
+						// import { h, createApp,  getCurrentInstance } from '../../../node_modules/vue/dist/vue.esm-browser.js';
+
+						const Comp = {
+								setup() {
+										const vm = getCurrentInstance()
+										console.log(`🚀 ~ vm =>`, vm)
+
+										return () => {
+												return h('div', [ h('p', '我是父组件的p标签') ])
+										}
+								},
+						}
+
+						createApp(Comp, { msg: 'hello' }).mount('#app')
+				</script>
+		</body>
+</html>

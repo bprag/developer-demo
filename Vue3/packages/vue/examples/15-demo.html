@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+		<head>
+				<meta charset="UTF-8" />
+				<title>Title</title>
+		</head>
+		<body>
+				<div id="app"></div>
+				<script type="module">
+						// import {
+						// 		h,
+						// 		createApp,
+						// 		ref,
+						// 		getCurrentInstance,
+						// 		onBeforeMount,
+						// 		onMounted,
+						// 		onBeforeUpdate,
+						// 		onUpdated,
+						// 		onBeforeUnmount,
+						// 		onUnmounted,
+						// } from '../../../node_modules/vue/dist/vue.esm-browser.js'
+						import {
+								h,
+								ref,
+								createApp,
+								getCurrentInstance,
+								onBeforeMount,
+								onMounted,
+								onBeforeUpdate,
+								onUpdated,
+								onBeforeUnmount,
+								onUnmounted,
+						} from '../dist/vue.esm.js'
+
+						/**
+							* 挂载
+							* onBeforeMount
+							* onMounted
+							*
+							* 更新
+							* onBeforeUpdate
+							* onUpdated
+							*
+							* 卸载
+							* onBeforeUnmount
+							* onUnmounted
+							*
+							*/
+
+						const Child = {
+								props: [ 'count' ],
+								setup(props) {
+										onBeforeMount(() => {
+												console.log('onBeforeMount 子组件')
+										})
+
+										onMounted(() => {
+												console.log('onMounted 子组件')
+										})
+
+										onBeforeUpdate(() => {
+												console.log('onBeforeUpdate 子组件')
+										})
+										onUpdated(() => {
+												console.log('onUpdated 子组件')
+										})
+
+										onBeforeUnmount(() => {
+												console.log('onBeforeUnmount 子组件')
+										})
+										onUnmounted(() => {
+												console.log('onUnmounted 子组件')
+										})
+
+										return () => {
+												return h('div', [ '我是子组件', props.count ])
+										}
+								},
+						}
+
+						const Comp = {
+								setup() {
+										const count = ref(0)
+
+										onBeforeMount(() => {
+												console.log('onBeforeMount 父组件')
+												console.log('onBeforeMount ====', getCurrentInstance())
+										})
+
+										console.log(`🚀 ~ document.querySelector('#container') =>`, document.querySelector('#container'))
+										onMounted(() => {
+												console.log(`🚀 ~ document.querySelector('#container') =>`, document.querySelector('#container'))
+												console.log('onMounted 父组件')
+												console.log('onMounted ====', getCurrentInstance())
+										})
+
+
+										onBeforeUpdate(() => {
+												console.log('onBeforeUpdate 父组件')
+												console.log('onBeforeUpdate ====', getCurrentInstance())
+										})
+										onUpdated(() => {
+												console.log('onUpdated 父组件')
+												console.log('onUpdated ====', getCurrentInstance())
+										})
+
+										onBeforeUnmount(() => {
+												console.log('onBeforeUnmount 父组件')
+												console.log('onBeforeUnmount ====', getCurrentInstance())
+										})
+
+										onUnmounted(() => {
+												console.log('onUnmounted 父组件')
+												console.log('onUnmounted ====', getCurrentInstance())
+										})
+
+										setTimeout(() => {
+												count.value++
+										}, 1000)
+
+										return () => {
+												return h('div', [
+														h('p', { id: 'container' }, '我是父组件的p标签'),
+														h(Child, {
+																count: count.value,
+														}),
+												])
+										}
+								},
+						}
+
+						const app = createApp(Comp, { msg: 'hello' })
+						app.mount('#app')
+
+						setTimeout(() => app.unmount(), 5000)
+				</script>
+		</body>
+</html>
