@@ -1,4 +1,5 @@
 import { isArray, isFunction, isNumber, isObject, isString, ShapeFlags } from "@vue/shared";
+import { getCurrentRenderingInstance } from './component';
 
 export const Text = Symbol('v-txt')
 
@@ -40,6 +41,13 @@ export function normalizeChildren(vnode, children) {
 	return children
 }
 
+export function normalizeRef(ref) {
+	return {
+		r: ref,
+		i: getCurrentRenderingInstance()
+	}
+}
+
 /**
  * 判断两个虚拟节点是不是相同类型
  * @param n1 老节点
@@ -68,7 +76,8 @@ export function createVNode(type, props, children = null) {
 		key: props?.key,
 		children: null,
 		shapeFlag,
-		el: null
+		el: null,
+		ref: normalizeRef(props?.ref)
 	}
 	
 	normalizeChildren(vnode, children)

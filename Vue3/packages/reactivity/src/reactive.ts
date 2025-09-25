@@ -13,9 +13,15 @@ const reactiveMap = new WeakMap()
 const reactiveSet = new WeakSet()
 
 function createReactiveObject(target) {
+	
 	if (!isObject(target)) {
 		return target
 	}
+	
+	if (Object.isExtensible(target)) {
+		return target
+	}
+	
 	if (reactiveSet.has(target)) {
 		return target
 	}

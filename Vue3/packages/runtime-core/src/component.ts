@@ -15,11 +15,10 @@ export function createComponentInstance(vnode) {
 		props: {},
 		attrs: {},
 		slots: {},
-		setupState: null,
-		render: null,
-		// 子树
-		subTree: null,
-		// 是否已经挂载
+		refs: {},
+		setupState: {},
+		render: null, // 子树
+		subTree: null, // 是否已经挂载
 		isMounted: false
 	}
 	
@@ -40,11 +39,15 @@ function createSetupContext(instance) {
 		get attrs() {
 			return instance.attrs
 		},
-		get slots() {
-			return instance.slots
-		},
+		
 		emit(event, ...args) {
 			emit(instance, event, ...args)
+		},
+		
+		slots: instance.slots,
+		
+		expose: (exposed) => {
+			instance.exposed = exposed
 		}
 	}
 }
@@ -98,6 +101,7 @@ function setupStatefulComponent(instance) {
 	
 	if (isFunction(type.setup)) {
 		const setupContext = createSetupContext(instance)
+		instance.setupContext = setupContext
 		setCurrentInstance(instance)
 		const setupResult = proxyRefs(type.setup(instance.props, setupContext))
 		unCurrentInstance()
@@ -124,6 +128,27 @@ export function emit(instance, event, ...args) {
 	handler && isFunction(handler) && handler(...args)
 }
 
+export function getComponentPublicInstance(instance) {
+	if (instance.exposed) {
+		
+		if (instance.exposedProxy) return instance.exposedProxy
+		
+		instance.exposedProxy = new Proxy(proxyRefs(instance.exposed), {
+			get(target, key): any {
+				if (key in target) {
+					return target[key]
+				}
+				if (key in publicPropertiesMap) {
+					return publicPropertiesMap[key](instance)
+				}
+			}
+		})
+		
+	}
+	
+	return instance.exposedProxy
+}
+
 export function getCurrentInstance() {
 	return currentInstance
 }
@@ -134,4 +159,18 @@ export function setCurrentInstance(instance) {
 
 export function unCurrentInstance() {
 	currentInstance = null
+}
+
+let currentRenderInstance = null;
+
+export function getCurrentRenderingInstance() {
+	return currentRenderInstance
+}
+
+export function setCurrentRenderingInstance(instance) {
+	currentRenderInstance = instance
+}
+
+export function unCurrentRenderingInstance() {
+	currentRenderInstance = null
 }

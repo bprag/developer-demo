@@ -24,7 +24,15 @@ function injectHook(target, hook, type) {
 	if (target && target[type] == null) {
 		target[type] = []
 	}
-	target[type].push(hook)
+	const _hook = () => {
+		setCurrentInstance(target)
+		try {
+			hook()
+		} finally {
+			unCurrentInstance()
+		}
+	}
+	target[type].push(_hook)
 }
 
 function createHook(type) {
@@ -35,15 +43,8 @@ function createHook(type) {
 
 export function triggerHooks(instance, type) {
 	const hooks = instance[type]
-	if (hooks) {
-		setCurrentInstance(instance)
-		
-		try {
-			hooks.forEach(hook => hook())
-		} finally {
-			unCurrentInstance()
-		}
-	}
+	
+	hooks?.forEach(hook => hook())
 }
 
 export const onBeforeMount = createHook(LifecycleHooks.BEFORE_MOUNT)

@@ -1,3 +1,5 @@
+import { setCurrentRenderingInstance, unCurrentRenderingInstance } from './component';
+
 export function hasPropsChanged(prevProps, nextProps) {
 	const nextKeys = Object.keys(nextProps)
 	const preKeys = Object.keys(prevProps)
@@ -31,4 +33,13 @@ export function shouldUpdateComponent(n1, n2) {
 	}
 	
 	return hasPropsChanged(prevProps, nextProps)
+}
+
+export function renderComponentRoot(instance) {
+	
+	setCurrentRenderingInstance(instance)
+	const subTree = instance.render.call(instance.proxy)
+	unCurrentRenderingInstance()
+	
+	return subTree
 }

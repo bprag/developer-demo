@@ -4,10 +4,11 @@ import { createAppAPI } from "./apiCreateApp";
 import { createComponentInstance, setupComponent } from "./component";
 import { RectiveEffect } from "@vue/reactivity";
 import { queueJob } from "./scheduler";
-import { shouldUpdateComponent } from './componentRenderUtils';
+import { renderComponentRoot, shouldUpdateComponent } from './componentRenderUtils';
 import { updateProps } from './componentProps';
 import { updateSlots } from './componentSlots';
 import { LifecycleHooks, triggerHooks } from './apiLifecycle';
+import { setRef } from './renderTemplateRef';
 
 export function createRenderer(options) {
 	const {
@@ -194,15 +195,16 @@ export function createRenderer(options) {
 	 * @param oldProps
 	 * @param newProps
 	 */
+	
 	function patchProps(el, oldProps, newProps) {
 		if (oldProps) {
 			for (const key in oldProps) {
-				hostPatchProp(el, key, oldProps[key], null)
+				key !== 'ref' && hostPatchProp(el, key, oldProps[key], null)
 			}
 		}
 		if (newProps) {
 			for (const key in newProps) {
-				hostPatchProp(el, key, oldProps?.[key], newProps[key])
+				key !== 'ref' && hostPatchProp(el, key, oldProps?.[key], newProps[key])
 			}
 		}
 	}
@@ -288,7 +290,7 @@ export function createRenderer(options) {
 		// props
 		if (props) {
 			for (const key in props) {
-				hostPatchProp(el, key, null, props[key])
+				key !== 'ref' && hostPatchProp(el, key, null, props[key])
 			}
 		}
 		// children
@@ -381,27 +383,35 @@ export function createRenderer(options) {
 		const componentUpdataFn = () => {
 			if (!instance.isMounted) {
 				const { vnode } = instance
+				
 				triggerHooks(instance, LifecycleHooks.BEFORE_MOUNT)
-				const subTree = instance.render.call(instance.proxy)
+				
+				const subTree = renderComponentRoot(instance)
 				patch(null, subTree, container, anchor)
-				vnode.el = subTree.el
+				vnode.el = subTree?.el
 				instance.subTree = subTree
 				instance.isMounted = true
+				
 				triggerHooks(instance, LifecycleHooks.MOUNTED)
 			} else {
 				let { next, vnode } = instance
+				
 				if (next) {
 					updateComponentPreRender(instance, next)
 				} else {
 					next = vnode
 				}
+				
 				triggerHooks(instance, LifecycleHooks.BEFORE_UPDATE)
+				
 				const preSubTree = instance.subTree
-				const subTree = instance.render.call(instance.proxy)
+				const subTree = renderComponentRoot(instance)
 				patch(preSubTree, subTree, container, anchor)
-				next.el = subTree.el
+				next.el = subTree?.el
 				instance.subTree = subTree
+				
 				triggerHooks(instance, LifecycleHooks.UPDATED)
+			
 			}
 		}
 		
@@ -452,7 +462,7 @@ export function createRenderer(options) {
 		/**
 		 * 处理元素、文本、组件
 		 */
-		const { shapeFlag, type } = n2
+		const { shapeFlag, type, ref } = n2
 		
 		switch (type) {
 			case Text:
@@ -466,6 +476,10 @@ export function createRenderer(options) {
 					processComponent(n1, n2, container, anchor)
 				}
 			
+		}
+		
+		if (ref != null) {
+			setRef(ref, n2)
 		}
 	}
 	
@@ -491,8 +505,7 @@ export function createRenderer(options) {
 	}
 	
 	return {
-		render,
-		createApp: createAppAPI(render)
+		render, createApp: createAppAPI(render)
 	}
 }
 

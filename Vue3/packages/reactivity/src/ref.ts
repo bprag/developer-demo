@@ -100,10 +100,12 @@ export function proxyRefs(target) {
 		},
 		set(target, key, newValue, receiver) {
 			const oldValue = target[key]
+			
 			if (isRef(oldValue) && !isRef(newValue)) {
 				oldValue.value = newValue
 				return true
 			}
+			
 			return Reflect.set(target, key, newValue, receiver)
 		}
 	})
