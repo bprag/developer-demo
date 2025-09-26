@@ -3,8 +3,18 @@ import { isString, ShapeFlags } from '@vue/shared';
 import { getComponentPublicInstance } from './component';
 
 export function setRef(ref, vnode) {
-	const { shapeFlag } = vnode
 	const { r: rawRef, i: instance } = ref
+	
+	if (vnode === null) {
+		if (isRef(rawRef)) {
+			rawRef.value = null
+		} else if (isString(rawRef)) {
+			instance.refs[rawRef] = null
+		}
+		return;
+	}
+	
+	const { shapeFlag } = vnode
 	
 	if (isRef(rawRef)) {
 		if (shapeFlag & ShapeFlags.COMPONENT) {
@@ -14,8 +24,6 @@ export function setRef(ref, vnode) {
 			rawRef.value = vnode.el
 		}
 	} else if (isString(rawRef)) {
-		console.log(`🚀 ~ instance =>`, instance)
-
 		if (shapeFlag & ShapeFlags.COMPONENT) {
 			instance.refs[rawRef] = getComponentPublicInstance(vnode.component)
 		} else {

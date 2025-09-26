@@ -13,6 +13,7 @@
 								createApp,
 								getCurrentInstance,
 								onMounted,
+								useTemplateRef
 								// } from '../../../node_modules/vue/dist/vue.esm-browser.js'
 						} from '../dist/vue.esm.js'
 
@@ -36,19 +37,25 @@
 						const App = {
 								name: 'App',
 								setup() {
-										const elRef = ref()
-
+										const elRef = useTemplateRef('elChild')
+										const show = ref(true)
 										const vm = getCurrentInstance()
 
 										onMounted(() => {
-												console.log('el.value ==> ', vm.proxy.$refs.elRef)
-												console.log(`🚀 ~ vm.proxy.$refs.elChild =>`, vm.proxy.$refs.elChild.foo())
+
+												console.log('el.value ==> ', elRef.value)
+												// console.log(`🚀 ~ vm.proxy.$refs.elChild =>`, vm.proxy.$refs.elChild.foo())
 										})
+
+										setTimeout(() => {
+												show.value = false
+										}, 5000)
+
 										return () => {
 
 												return h('div', {}, [
-														h('p', { id: 'container', ref: 'elRef' }, '我是父组件的p标签'),
-														h(Child, { ref: 'elChild' }),
+														h('p', { id: 'container', ref: 'elChild' }, '我是父组件的p标签'),
+														show.value ? h(Child) : '',
 												])
 										}
 								},

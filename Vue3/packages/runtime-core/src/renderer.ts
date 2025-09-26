@@ -250,7 +250,7 @@ export function createRenderer(options) {
 	 * @param vnode 旧节点
 	 */
 	function unmount(vnode) {
-		const { shapeFlag } = vnode;
+		const { shapeFlag, ref } = vnode;
 		
 		if (shapeFlag & ShapeFlags.COMPONENT) {
 			unmountComponent(vnode.component)
@@ -262,6 +262,10 @@ export function createRenderer(options) {
 		}
 		
 		hostRemove(vnode.el);
+		
+		if (ref != null) {
+			setRef(ref, null)
+		}
 	}
 	
 	/**
@@ -411,7 +415,7 @@ export function createRenderer(options) {
 				instance.subTree = subTree
 				
 				triggerHooks(instance, LifecycleHooks.UPDATED)
-			
+				
 			}
 		}
 		
