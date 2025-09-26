@@ -28,8 +28,9 @@ export function createRenderer(options) {
 	 * @param c1
 	 * @param c2
 	 * @param container
+	 * @param parentComponent
 	 */
-	function patchKeyedChildren(c1, c2, container) {
+	function patchKeyedChildren(c1, c2, container, parentComponent) {
 		let i = 0;
 		let e1 = c1.length - 1; // 老节点的尾索引
 		let e2 = c2.length - 1; // 新节点的尾索引
@@ -44,7 +45,7 @@ export function createRenderer(options) {
 			const n1 = c1[i]
 			const n2 = c2[i] = normalizeVNode(c2[i])
 			if (isSameVNodeType(n1, n2)) {
-				patch(n1, n2, container)
+				patch(n1, n2, container, null, parentComponent)
 			} else {
 				break
 			}
@@ -62,7 +63,7 @@ export function createRenderer(options) {
 			const n1 = c1[e1]
 			const n2 = c2[e2] = normalizeVNode(c2[e2])
 			if (isSameVNodeType(n1, n2)) {
-				patch(n1, n2, container)
+				patch(n1, n2, container, null, parentComponent)
 			} else {
 				break
 			}
@@ -79,7 +80,7 @@ export function createRenderer(options) {
 			const nextPos = e2 + 1
 			const anchor = nextPos < c2.length ? c2[nextPos].el : null
 			while (i <= e2) {
-				patch(null, c2[i] = normalizeVNode(c2[i]), container, anchor)
+				patch(null, c2[i] = normalizeVNode(c2[i]), container, anchor, parentComponent)
 				i++
 			}
 		} else if (i > e2) {
@@ -114,7 +115,7 @@ export function createRenderer(options) {
 						moved = true
 					}
 					newIndexToOldIndexMap[nIndex] = j
-					patch(n1, c2[nIndex] = normalizeVNode(c2[nIndex]), container)
+					patch(n1, c2[nIndex] = normalizeVNode(c2[nIndex]), container, null, parentComponent)
 				} else {
 					unmount(n1)
 				}
@@ -134,7 +135,7 @@ export function createRenderer(options) {
 						hostInsert(n2.el, container, anchor)
 					}
 				} else {
-					patch(null, n2, container, anchor)
+					patch(null, n2, container, anchor, parentComponent)
 				}
 			}
 		}
@@ -144,8 +145,9 @@ export function createRenderer(options) {
 	 * 更新子节点
 	 * @param n1 旧节点
 	 * @param n2 新节点
+	 * @param parentComponent
 	 */
-	function patchChildren(n1, n2) {
+	function patchChildren(n1, n2, parentComponent) {
 		const el = n2.el
 		/**
 		 * 1. 新节点是文本
@@ -170,19 +172,19 @@ export function createRenderer(options) {
 			if (preShapeFlag & ShapeFlags.TEXT_CHILDREN) {
 				hostSetElementText(el, '')
 				if (nextShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-					mountChildren(n2.children, el)
+					mountChildren(n2.children, el, parentComponent)
 				}
 			} else {
 				if (preShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
 					if (nextShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
 						// 全量 diff
-						patchKeyedChildren(n1.children, n2.children, el)
+						patchKeyedChildren(n1.children, n2.children, el, parentComponent)
 					} else {
 						unmountChildren(n1.children)
 					}
 				} else {
 					if (nextShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-						mountChildren(n2.children, el)
+						mountChildren(n2.children, el, parentComponent)
 					}
 				}
 			}
@@ -216,15 +218,16 @@ export function createRenderer(options) {
 	 * 3. 更新子节点
 	 * @param n1
 	 * @param n2
+	 * @param parentComponent
 	 */
-	function patchElement(n1, n2) {
+	function patchElement(n1, n2, parentComponent) {
 		const el = (n2.el = n1.el)
 		// props 更新
 		const oldProps = n1.props || {}
 		const newProps = n2.props || {}
 		patchProps(el, oldProps, newProps)
 		// children 更新
-		patchChildren(n1, n2)
+		patchChildren(n1, n2, parentComponent)
 	}
 	
 	/**
@@ -272,11 +275,12 @@ export function createRenderer(options) {
 	 * 挂载子节点
 	 * @param children
 	 * @param container
+	 * @param parentComponent
 	 */
-	function mountChildren(children, container) {
+	function mountChildren(children, container, parentComponent) {
 		for (let i = 0; i < children.length; i++) {
 			const child = children[i] = normalizeVNode(children[i])
-			patch(null, child, container)
+			patch(null, child, container, null, parentComponent)
 		}
 	}
 	
@@ -285,8 +289,9 @@ export function createRenderer(options) {
 	 * @param vnode
 	 * @param container
 	 * @param anchor
+	 * @param parentComponent
 	 */
-	function mountElement(vnode, container, anchor) {
+	function mountElement(vnode, container, anchor, parentComponent) {
 		const { type, props, children, shapeFlag } = vnode
 		
 		const el = hostCreateElement(type)
@@ -299,11 +304,11 @@ export function createRenderer(options) {
 		}
 		// children
 		if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
-			// children is text
+			// children are text
 			hostSetElementText(el, children)
 		} else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-			// children is array
-			mountChildren(children, el)
+			// children are array
+			mountChildren(children, el, parentComponent)
 		}
 		
 		hostInsert(el, container, anchor)
@@ -335,12 +340,13 @@ export function createRenderer(options) {
 	 * @param n2
 	 * @param container
 	 * @param anchor
+	 * @param parentComponent
 	 */
-	function processElement(n1, n2, container, anchor) {
+	function processElement(n1, n2, container, anchor, parentComponent) {
 		if (n1 === null) {
-			mountElement(n2, container, anchor)
+			mountElement(n2, container, anchor, parentComponent)
 		} else {
-			patchElement(n1, n2)
+			patchElement(n1, n2, parentComponent)
 		}
 	}
 	
@@ -362,11 +368,12 @@ export function createRenderer(options) {
 	 * @param n2
 	 * @param container
 	 * @param anchor
+	 * @param parentComponent
 	 */
-	function processComponent(n1, n2, container, anchor) {
+	function processComponent(n1, n2, container, anchor, parentComponent) {
 		if (n1 == null) {
 			// 挂载
-			mountComponent(n2, container, anchor)
+			mountComponent(n2, container, anchor, parentComponent)
 		} else {
 			// 更新
 			updateComponent(n1, n2)
@@ -384,14 +391,14 @@ export function createRenderer(options) {
 	
 	function setupRenderEffect(instance, container, anchor) {
 		
-		const componentUpdataFn = () => {
+		const componentUpdateFn = () => {
 			if (!instance.isMounted) {
 				const { vnode } = instance
 				
 				triggerHooks(instance, LifecycleHooks.BEFORE_MOUNT)
 				
 				const subTree = renderComponentRoot(instance)
-				patch(null, subTree, container, anchor)
+				patch(null, subTree, container, anchor, instance)
 				vnode.el = subTree?.el
 				instance.subTree = subTree
 				instance.isMounted = true
@@ -410,7 +417,7 @@ export function createRenderer(options) {
 				
 				const preSubTree = instance.subTree
 				const subTree = renderComponentRoot(instance)
-				patch(preSubTree, subTree, container, anchor)
+				patch(preSubTree, subTree, container, anchor, instance)
 				next.el = subTree?.el
 				instance.subTree = subTree
 				
@@ -419,7 +426,7 @@ export function createRenderer(options) {
 			}
 		}
 		
-		const effect = new RectiveEffect(componentUpdataFn)
+		const effect = new RectiveEffect(componentUpdateFn)
 		const update = effect.run.bind(effect)
 		
 		instance.update = update
@@ -436,9 +443,10 @@ export function createRenderer(options) {
 	 * @param vnode
 	 * @param container
 	 * @param anchor
+	 * @param parentComponent
 	 */
-	function mountComponent(vnode, container, anchor) {
-		const instance = createComponentInstance(vnode)
+	function mountComponent(vnode, container, anchor, parentComponent) {
+		const instance = createComponentInstance(vnode, parentComponent)
 		vnode.component = instance;
 		setupComponent(instance)
 		setupRenderEffect(instance, container, anchor)
@@ -450,8 +458,9 @@ export function createRenderer(options) {
 	 * @param n2 新节点
 	 * @param container 容器
 	 * @param anchor 插入的节点
+	 * @param parentComponent
 	 */
-	function patch(n1, n2, container, anchor = null) {
+	function patch(n1, n2, container, anchor = null, parentComponent = null) {
 		if (n1 === n2) return
 		
 		if (n1 && n2 === null) {
@@ -460,6 +469,7 @@ export function createRenderer(options) {
 		}
 		
 		if (n1 && !isSameVNodeType(n1, n2)) {
+			anchor = hostNextSibling(n1.el)
 			unmount(n1)
 			n1 = null
 		}
@@ -475,9 +485,9 @@ export function createRenderer(options) {
 			default:
 				if (shapeFlag & ShapeFlags.ELEMENT) {
 					// 元素
-					processElement(n1, n2, container, anchor)
+					processElement(n1, n2, container, anchor, parentComponent)
 				} else if (shapeFlag & ShapeFlags.COMPONENT) {
-					processComponent(n1, n2, container, anchor)
+					processComponent(n1, n2, container, anchor, parentComponent)
 				}
 			
 		}

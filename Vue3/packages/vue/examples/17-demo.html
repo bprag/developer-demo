@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+		<head>
+				<meta charset="UTF-8" />
+				<title>Title</title>
+		</head>
+		<body>
+				<div id="app"></div>
+				<script type="module">
+						import {
+								h,
+								ref,
+								createApp,
+								provide,
+								inject,
+								getCurrentInstance,
+								// } from '../../../node_modules/vue/dist/vue.esm-browser.js'
+						} from '../dist/vue.esm.js'
+
+						const Child = {
+								setup() {
+										const a = inject('a')
+										return () => {
+												return h('div', [ '我是子组件', a.value ])
+										}
+								},
+						}
+
+						const App = {
+								name: 'App',
+								setup() {
+										provide('count', 0)
+										console.log(getCurrentInstance().provides === app.context.provides)
+										return () => {
+												return h('div', [
+														h('p', { id: 'container', ref: 'elRef' }, '我是父组件的p标签'),
+														h(Child),
+												])
+										}
+								},
+						}
+
+						const app = createApp(App)
+						const a = ref('aaa')
+						app.provide('a', a)
+						app.mount('#app')
+				</script>
+		</body>
+</html>

@@ -7,3 +7,4 @@ export * from './scheduler';
 export * from './component';
 export * from './apiLifecycle'
 export * from './useTemplateRef'
+export * from './apiInject'

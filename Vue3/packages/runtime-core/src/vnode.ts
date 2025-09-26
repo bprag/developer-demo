@@ -73,9 +73,10 @@ export function createVNode(type, props, children = null) {
 		__v_isVNode: true,
 		type,
 		props,
+		shapeFlag,
+		appContext: null,
 		key: props?.key,
 		children: null,
-		shapeFlag,
 		el: null,
 		ref: normalizeRef(props?.ref)
 	}

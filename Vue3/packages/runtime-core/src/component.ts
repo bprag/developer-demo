@@ -6,11 +6,14 @@ import { initSlots } from './componentSlots';
 
 export let currentInstance;
 
-export function createComponentInstance(vnode) {
+export function createComponentInstance(vnode, parent) {
 	const { type } = vnode
+	const appContext = parent ? parent.appContext : vnode.appContext
 	const instance: { [key in string]: any } = {
 		type,
 		vnode,
+		parent,
+		appContext,
 		propsOptions: normalizePropsOptions(type.props),
 		props: {},
 		attrs: {},
@@ -19,7 +22,8 @@ export function createComponentInstance(vnode) {
 		setupState: {},
 		render: null, // 子树
 		subTree: null, // 是否已经挂载
-		isMounted: false
+		isMounted: false,
+		provides: parent ? parent.provides : appContext.provides
 	}
 	
 	instance.ctx = { _: instance }
