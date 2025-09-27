@@ -390,7 +390,6 @@ export function createRenderer(options) {
 	}
 	
 	function setupRenderEffect(instance, container, anchor) {
-		
 		const componentUpdateFn = () => {
 			if (!instance.isMounted) {
 				const { vnode } = instance

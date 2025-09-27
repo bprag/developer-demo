@@ -67,6 +67,8 @@ export function createVNode(type, props, children = null) {
 		shapeFlag = ShapeFlags.STATEFUL_COMPONENT
 	} else if (isFunction(type)) {
 		shapeFlag = ShapeFlags.FUNCTIONAL_COMPONENT
+	} else if (isFunction(type)) {
+		shapeFlag = ShapeFlags.FUNCTIONAL_COMPONENT
 	}
 	
 	const vnode = {
