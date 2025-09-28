@@ -8,3 +8,4 @@ export * from './component';
 export * from './apiLifecycle'
 export * from './useTemplateRef'
 export * from './apiInject'
+export * from './components/Teleport'

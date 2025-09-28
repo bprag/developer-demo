@@ -145,10 +145,10 @@ export function createRenderer(options) {
 	 * 更新子节点
 	 * @param n1 旧节点
 	 * @param n2 新节点
+	 * @param el 容器
 	 * @param parentComponent
 	 */
-	function patchChildren(n1, n2, parentComponent) {
-		const el = n2.el
+	function patchChildren(n1, n2, el, parentComponent) {
 		/**
 		 * 1. 新节点是文本
 		 *    1.1 老的是文本
@@ -227,7 +227,7 @@ export function createRenderer(options) {
 		const newProps = n2.props || {}
 		patchProps(el, oldProps, newProps)
 		// children 更新
-		patchChildren(n1, n2, parentComponent)
+		patchChildren(n1, n2, n2.el, parentComponent)
 	}
 	
 	/**
@@ -257,10 +257,10 @@ export function createRenderer(options) {
 		
 		if (shapeFlag & ShapeFlags.COMPONENT) {
 			unmountComponent(vnode.component)
-		}
-		
-		if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-			// 递归卸载子节点
+		} else if (shapeFlag & ShapeFlags.TELEPORT) {
+			unmountChildren(vnode.children)
+			return
+		} else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
 			unmountChildren(vnode.children)
 		}
 		
@@ -487,8 +487,13 @@ export function createRenderer(options) {
 					processElement(n1, n2, container, anchor, parentComponent)
 				} else if (shapeFlag & ShapeFlags.COMPONENT) {
 					processComponent(n1, n2, container, anchor, parentComponent)
+				} else if (shapeFlag & ShapeFlags.TELEPORT) {
+					type.process(n1, n2, container, anchor, parentComponent, {
+						mountChildren,
+						patchChildren,
+						options
+					})
 				}
-			
 		}
 		
 		if (ref != null) {
@@ -518,7 +523,8 @@ export function createRenderer(options) {
 	}
 	
 	return {
-		render, createApp: createAppAPI(render)
+		render,
+		createApp: createAppAPI(render)
 	}
 }
 

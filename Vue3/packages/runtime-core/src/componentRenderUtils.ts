@@ -39,7 +39,7 @@ export function shouldUpdateComponent(n1, n2) {
 export function renderComponentRoot(instance) {
 	const { vnode } = instance
 	
-	if (vnode.shapeFlage & ShapeFlags.STATEFUL_COMPONENT) {
+	if (vnode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
 		setCurrentRenderingInstance(instance)
 		const subTree = instance.render.call(instance.proxy)
 		unCurrentRenderingInstance()

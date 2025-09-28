@@ -1,5 +1,6 @@
 import { isArray, isFunction, isNumber, isObject, isString, ShapeFlags } from "@vue/shared";
 import { getCurrentRenderingInstance } from './component';
+import { isTeleport } from './components/Teleport';
 
 export const Text = Symbol('v-txt')
 
@@ -63,10 +64,10 @@ export function createVNode(type, props, children = null) {
 	
 	if (isString(type)) {
 		shapeFlag = ShapeFlags.ELEMENT
+	} else if (isTeleport(type)) {
+		shapeFlag = ShapeFlags.TELEPORT
 	} else if (isObject(type)) {
 		shapeFlag = ShapeFlags.STATEFUL_COMPONENT
-	} else if (isFunction(type)) {
-		shapeFlag = ShapeFlags.FUNCTIONAL_COMPONENT
 	} else if (isFunction(type)) {
 		shapeFlag = ShapeFlags.FUNCTIONAL_COMPONENT
 	}
